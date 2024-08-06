@@ -8,7 +8,7 @@
 #define ONE_MINUTE_IN_SECONDS    60
 #define DEFAULT_ARRAY_LENGTH     6
 #define ARRAY_DEFAULT_VALUE      0xff
-#define START_TICKS(ticks) for (int i = 0 ; i < tickForTest ; i++) tick(); 
+#define START_TICKS(ticks) for (int i = 0 ; i < ticks ; i++) tick(); 
 
 int g_arrayExpected [DEFAULT_ARRAY_LENGTH];
 int g_currentHour   [DEFAULT_ARRAY_LENGTH];
@@ -160,10 +160,6 @@ void test_shutdownAlarmWithOffset(void)
 }
 
 
-
-
-
-
 // typedef void (*init_callback_t)(void);
 // typedef void (*test_callback_t)(void);
 
@@ -184,30 +180,34 @@ void test_shutdownAlarmWithOffset(void)
 
 
 // void test_reset_clock_overflow(void)
-// {
-//     int hour [6] = {0xff};
+// {    
+//     char buffer [50] = {'\0'};
 
-//     static const struct testCases {
-//         int timeToSet [6];
-//         int expectedValue [6];
-//         int tickForTest;
-//     }EJEMPLOS[] = {
-        
-//         { .timeToSet = {1,2,3,0,0,0} , .expectedValue = {1,2,3,0,0,5}, .timeToSet = 1},
-//         { .timeToSet = {1,2,3,0,0,0} , .expectedValue = {1,2,3,2,0,0}, .timeToSet = 1},
-//         { .timeToSet = {2,3,5,9,5,9},  .expectedValue = {0,0,0,0,0,0}, .timeToSet = 1},
+//     static struct testCases {
+//         int timeToSet [DEFAULT_ARRAY_LENGTH];
+//         int expectedValue [DEFAULT_ARRAY_LENGTH];
+//         int ticks;
+//     }EJEMPLOS[] = 
+//     {
+//         { .timeToSet = {1,2,3,0,0,0} , .expectedValue = {1,2,3,0,0,5}, .ticks = 9},
+//         { .timeToSet = {1,2,0,0,0,0} , .expectedValue = {1,2,0,2,0,0}, .ticks = 120},
+//         { .timeToSet = {2,3,5,9,5,9} , .expectedValue = {0,0,0,0,0,0}, .ticks = 1},
 //     };
 
 //     for (int i = 0 ; i < sizeof(EJEMPLOS) / sizeof(struct testCases) ; i++)
 //     {
-//         memset(hour,0xff,sizeof(hour));
+//         memset(g_currentHour,0xff,sizeof(g_currentHour));
+//         /* Set time to clock */
 
-//         set_TimeOrAlarm(&EJEMPLOS[i].timeToSet[0],6,SET_TIME);
+//         set_TimeOrAlarm(EJEMPLOS[i].timeToSet,sizeof(EJEMPLOS[i].timeToSet),SET_TIME);
 
-//         for (int i = 0 ; i < EJEMPLOS[i].tickForTest ; i++)
-//             tick();
+//         sprintf(buffer,"Ejemplo: %i, ticks: %i",i,EJEMPLOS[i].ticks);
+//         printf(buffer);
         
-//         TEST_ASSERT_TRUE(get_CurrentTime(hour,sizeof(hour)));
-//         TEST_ASSERT_EQUAL_UINT8_ARRAY(&EJEMPLOS[i].expectedValue[0],hour,sizeof(hour));
+//         START_TICKS(EJEMPLOS[i].ticks);
+        
+//         /* Get Current time after ticks... */
+//         TEST_ASSERT_TRUE(get_CurrentTime(g_currentHour,sizeof(g_currentHour)));
+//         TEST_ASSERT_EQUAL_UINT8_ARRAY(EJEMPLOS[i].expectedValue,g_currentHour,sizeof(g_currentHour));
 //     }
 // }
