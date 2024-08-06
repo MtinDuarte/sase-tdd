@@ -20,3 +20,4 @@ bool get_AlarmTime(int* hour, int arrayLength);
 void setAlarmIsActive(void);
 void registerCallback(alarmMatched alarmCB);
 bool set_ShutdownAlarm(void);
+bool set_ShutdownAlarmWithOffset(int minutesOffset);

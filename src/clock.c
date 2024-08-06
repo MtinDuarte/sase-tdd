@@ -10,11 +10,11 @@ typedef struct
 {
     int          currentTicks;
     int          ticksPerSecond;
-    int          time[6];       // {h,h,m,m,s,s}
-    int          alarmTime[6];  // {h,h,m,m,s,s}
     bool         inAlarm;
     bool         isValid;
     int          alarmOffset;
+    int          alarmTime[6];  // {h,h,m,m,s,s}
+    int          time[6];       // {h,h,m,m,s,s}
     bool         isAlarmActive;
     alarmMatched alarmCB;
 }test_reloj;
@@ -58,7 +58,7 @@ void increment_bcd(int* high_digit, int* low_digit, int max_high_digit)
         // Para las horas el máximo es 23, y para los minutos y segundos tengo 60 como máximo.
         if (*high_digit >= max_high_digit) 
         {
-            // digíto más significativo alcanzaron máximo valor.
+            // digito mas significativo alcanzaron máximo valor.
             *high_digit = 0;
         }
     }
@@ -218,4 +218,34 @@ bool get_AlarmTime(int* hour, int arrayLength)
 bool set_ShutdownAlarm(void)
 {
     g_test_reloj.inAlarm = false;
+}
+// Función para agregar un offset de minutos
+bool set_ShutdownAlarmWithOffset(int minutesOffset)
+{
+    g_test_reloj.alarmTime [0] = g_test_reloj.time[0];
+    g_test_reloj.alarmTime [1] = g_test_reloj.time[1];
+    g_test_reloj.alarmTime [2] = g_test_reloj.time[2];
+    g_test_reloj.alarmTime [3] = g_test_reloj.time[3];
+    g_test_reloj.alarmTime [4] = g_test_reloj.time[4];
+    g_test_reloj.alarmTime [5] = g_test_reloj.time[5];
+
+
+    for (int i = 0; i < minutesOffset; i++) 
+    {
+        increment_bcd(&g_test_reloj.alarmTime[2], &g_test_reloj.alarmTime[3], 6); // Incrementa los minutos
+
+        // Si los minutos se reinician a 00, incrementa las horas
+        if (g_test_reloj.alarmTime[2] == 0 && g_test_reloj.alarmTime[3] == 0) 
+        {
+            increment_bcd(&g_test_reloj.alarmTime[0], &g_test_reloj.alarmTime[1], 3); // Incrementa las horas
+
+            // Ajustar para 24 horas en BCD (00-23)
+            if (g_test_reloj.alarmTime[0] == 2 && g_test_reloj.alarmTime[1] >= 4) {
+                g_test_reloj.alarmTime[0] = 0;
+                g_test_reloj.alarmTime[1] = 0;
+            }
+        }
+    }
+    g_test_reloj.inAlarm = false;
+    return true;
 }
