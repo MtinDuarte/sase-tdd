@@ -8,13 +8,14 @@
 
 typedef struct 
 {
-    int         currentTicks;
-    int         ticksPerSecond;
-    //time [6] = {h,h,m,m,s,s}
-    int          time[6];
-    int          alarmTime[6];
-    int          inAlarm;
+    int          currentTicks;
+    int          ticksPerSecond;
+    int          time[6];       // {h,h,m,m,s,s}
+    int          alarmTime[6];  // {h,h,m,m,s,s}
+    bool         inAlarm;
     bool         isValid;
+    int          alarmOffset;
+    bool         isAlarmActive;
     alarmMatched alarmCB;
 }test_reloj;
 
@@ -213,4 +214,8 @@ bool get_AlarmTime(int* hour, int arrayLength)
         hour [0] = g_test_reloj.alarmTime[0];
     }
  
+}
+bool set_ShutdownAlarm(void)
+{
+    g_test_reloj.inAlarm = false;
 }

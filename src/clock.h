@@ -19,3 +19,4 @@ bool set_TimeOrAlarm(int* hour, int arrayLength, int timeAction);
 bool get_AlarmTime(int* hour, int arrayLength);
 void setAlarmIsActive(void);
 void registerCallback(alarmMatched alarmCB);
+bool set_ShutdownAlarm(void);

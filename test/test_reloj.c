@@ -127,7 +127,44 @@ void test_IsSystemInAlarm(void)
     
     TEST_ASSERT_TRUE(isSystemInAlarm());
 }
+void test_shutdownAlarm(void)
+{
+    int timeToSet     [6] = {1,2,0,0,0,0};
+    int alarmToBeSet  [6] = {1,2,0,2,0,0}; 
+    int hour          [6] = { 0xff };
+    int tickForTest       = 60 * 3;
+    
+    /* Registrar callback */
+    registerCallback(setAlarmIsActive);
 
+    /* Setear hora */
+    set_TimeOrAlarm(timeToSet,sizeof(timeToSet),SET_TIME);
+
+    /* Setear alarma  */
+    set_TimeOrAlarm(alarmToBeSet,sizeof(alarmToBeSet),SET_ALARM);
+
+    for (int i = 0 ; i < tickForTest ; i++)
+        tick();
+    
+    TEST_ASSERT_TRUE(isSystemInAlarm());
+
+    set_ShutdownAlarm();
+
+    for (int i = 0 ; i < tickForTest ; i++)
+        tick();
+
+    TEST_ASSERT_FALSE(isSystemInAlarm());
+}
+void test_shutdownAlarmWithOffset(void)
+{
+    
+}
+
+/*
+    - Apagar la alarma.
+    - Agregarle un offset a la alarma.
+
+*/
 
 
 
