@@ -1,4 +1,3 @@
-#include "unity.h"
 #include "stdint.h"
 #include "stdbool.h"
 #include "string.h"
@@ -42,6 +41,38 @@ void set_tickCount(int ticksPerSecond)
 {
     g_test_reloj.ticksPerSecond = ticksPerSecond;
 }
+bool set_ShutdownAlarm(void)
+{
+    g_test_reloj.inAlarm = false;
+}
+bool set_TimeOrAlarm(int* hour, int arrayLength, int timeAction)
+{
+    if(timeAction == SET_TIME && hour && arrayLength)
+    {
+        g_test_reloj.time[5] = hour [5];
+        g_test_reloj.time[4] = hour [4];
+        g_test_reloj.time[3] = hour [3];
+        g_test_reloj.time[2] = hour [2];
+        g_test_reloj.time[1] = hour [1];
+        g_test_reloj.time[0] = hour [0];
+    }else if (timeAction == SET_ALARM && hour && arrayLength)
+    {
+        g_test_reloj.alarmTime[5] = hour [5];
+        g_test_reloj.alarmTime[4] = hour [4];
+        g_test_reloj.alarmTime[3] = hour [3];
+        g_test_reloj.alarmTime[2] = hour [2];
+        g_test_reloj.alarmTime[1] = hour [1];
+        g_test_reloj.alarmTime[0] = hour [0];
+    }else
+    {
+        g_test_reloj.isValid = false;
+        return false;        
+    }
+    g_test_reloj.isValid = true; 
+    return true;
+}
+
+
 // Función para incrementar en BCD
 void increment_bcd(int* high_digit, int* low_digit, int max_high_digit)
 {
@@ -112,123 +143,70 @@ void tick(void)
         }
     }
 }
-
-void _tick(void)
-{
-    // Incrementa los ticks actuales
-    g_test_reloj.currentTicks++;
-
-    // Comprueba si los ticks actuales han alcanzado los ticks por segundo
-    if (g_test_reloj.currentTicks >= g_test_reloj.ticksPerSecond) 
-    {
-        // Resetear los ticks actuales
-        g_test_reloj.currentTicks = 0;
-
-        // Incrementar los segundos
-        g_test_reloj.time[5]++;
-        if (g_test_reloj.time[5] >= 10) {
-            g_test_reloj.time[5] = 0;
-            g_test_reloj.time[4]++;
-            if (g_test_reloj.time[4] >= 6) {
-                g_test_reloj.time[4] = 0;
-
-                // Incrementar los minutos
-                g_test_reloj.time[3]++;
-                if (g_test_reloj.time[3] >= 10) {
-                    g_test_reloj.time[3] = 0;
-                    g_test_reloj.time[2]++;
-                    if (g_test_reloj.time[2] >= 6) {
-                        g_test_reloj.time[2] = 0;
-
-                        // Incrementar las horas
-                        g_test_reloj.time[1]++;
-                        if (g_test_reloj.time[1] >= 10) {
-                            g_test_reloj.time[1] = 0;
-                            g_test_reloj.time[0]++;
-                            if (g_test_reloj.time[0] >= 2 && g_test_reloj.time[1] >= 4) {
-                                // Resetear las horas
-                                g_test_reloj.time[0] = 0;
-                                g_test_reloj.time[1] = 0;
-                            }
-                        }
-                    }
-                }
-            }
-        }
-    }
-}
-bool get_CurrentTime(int* hour, int arrayLength)
+/**
+ * @brief Get the CurrentTime object
+ * 
+ * @param hour          The pointer to the buffer to store time values
+ * @param arrayLength   The length of the buffer where the values will be copied.
+ * @return true         In case of time is valid (previouly set) and copied sucessfuly
+ * @return false        Time was never set and pointer to buffer will return all zeros.
+ */
+bool get_CurrentTime(int* hourBuffer, int arrayLength)
 {
     /* Obtener el valor de retorno. Obtener la hora correcta / incorrecta.  */
-    memset(hour,0,arrayLength);
+    memset(hourBuffer,0,arrayLength);
 
-    if(g_test_reloj.isValid)
+    if(g_test_reloj.isValid && hourBuffer)
     {
         // hour [6] = {h,h,m,m,s,s}
-        hour[5] =  g_test_reloj.time[5];
-        hour[4] =  g_test_reloj.time[4];
-        hour[3] =  g_test_reloj.time[3];
-        hour[2] =  g_test_reloj.time[2];
-        hour[1] =  g_test_reloj.time[1];
-        hour[0] =  g_test_reloj.time[0];        
+        hourBuffer[5] =  g_test_reloj.time[5];
+        hourBuffer[4] =  g_test_reloj.time[4];
+        hourBuffer[3] =  g_test_reloj.time[3];
+        hourBuffer[2] =  g_test_reloj.time[2];
+        hourBuffer[1] =  g_test_reloj.time[1];
+        hourBuffer[0] =  g_test_reloj.time[0];        
         return true;
     }
     return false;
 }
-bool set_TimeOrAlarm(int* hour, int arrayLength, int timeAction)
+/**
+ * @brief Get the AlarmTime object
+ * 
+ * @param hourBuffer    Pointer to the buffer where the data will be copied.
+ * @param arrayLength   Array length of the pointer where the values will be copied.
+ * @return true         AlarmTime was successfuly copied in HourBuffer
+ * @return false 
+ */
+bool get_AlarmTime(int* hourBuffer, int arrayLength)
 {
-    if(timeAction == SET_TIME && hour && arrayLength)
+    memset(hourBuffer,0,arrayLength);
+    if(hourBuffer && arrayLength)
     {
-        g_test_reloj.time[5] = hour [5];
-        g_test_reloj.time[4] = hour [4];
-        g_test_reloj.time[3] = hour [3];
-        g_test_reloj.time[2] = hour [2];
-        g_test_reloj.time[1] = hour [1];
-        g_test_reloj.time[0] = hour [0];
-    }else if (timeAction == SET_ALARM && hour && arrayLength)
-    {
-        g_test_reloj.alarmTime[5] = hour [5];
-        g_test_reloj.alarmTime[4] = hour [4];
-        g_test_reloj.alarmTime[3] = hour [3];
-        g_test_reloj.alarmTime[2] = hour [2];
-        g_test_reloj.alarmTime[1] = hour [1];
-        g_test_reloj.alarmTime[0] = hour [0];
-    }else
-    {
-        g_test_reloj.isValid = false;
-        return false;        
+        hourBuffer [5] = g_test_reloj.alarmTime[5];
+        hourBuffer [4] = g_test_reloj.alarmTime[4];
+        hourBuffer [3] = g_test_reloj.alarmTime[3];
+        hourBuffer [2] = g_test_reloj.alarmTime[2];
+        hourBuffer [1] = g_test_reloj.alarmTime[1];
+        hourBuffer [0] = g_test_reloj.alarmTime[0];
+        return true;
     }
-    g_test_reloj.isValid = true; 
-    return true;
+    return false;
 }
-bool get_AlarmTime(int* hour, int arrayLength)
-{
-    memset(hour,0,arrayLength);
-    if(hour && arrayLength)
-    {
-        hour [5] = g_test_reloj.alarmTime[5];
-        hour [4] = g_test_reloj.alarmTime[4];
-        hour [3] = g_test_reloj.alarmTime[3];
-        hour [2] = g_test_reloj.alarmTime[2];
-        hour [1] = g_test_reloj.alarmTime[1];
-        hour [0] = g_test_reloj.alarmTime[0];
-    }
- 
-}
-bool set_ShutdownAlarm(void)
-{
-    g_test_reloj.inAlarm = false;
-}
-// Función para agregar un offset de minutos
+/**
+ * @brief Set the ShutdownAlarmWithOffset
+ * 
+ * @param minutesOffset     Offset for the alarm synced with the current time.
+ * @return true             Alarm values correctly set.
+ */
 bool set_ShutdownAlarmWithOffset(int minutesOffset)
 {
+    /*  Sync alarmTime with the current time  + offset */
     g_test_reloj.alarmTime [0] = g_test_reloj.time[0];
     g_test_reloj.alarmTime [1] = g_test_reloj.time[1];
     g_test_reloj.alarmTime [2] = g_test_reloj.time[2];
     g_test_reloj.alarmTime [3] = g_test_reloj.time[3];
     g_test_reloj.alarmTime [4] = g_test_reloj.time[4];
     g_test_reloj.alarmTime [5] = g_test_reloj.time[5];
-
 
     for (int i = 0; i < minutesOffset; i++) 
     {

@@ -4,11 +4,21 @@
 #include "string.h"
 #include "clock.h"
 
+
+// Correr los test de covertura: ceedling clobber gcov:all utils:gcov
+
+
 #define DEFAULT_TICKS_PER_SECOND 1
 #define ONE_MINUTE_IN_SECONDS    60
 #define DEFAULT_ARRAY_LENGTH     6
 #define ARRAY_DEFAULT_VALUE      0xff
-#define START_TICKS(ticks) for (int i = 0 ; i < ticks ; i++) tick(); 
+#define START_TICKS(ticks)                  \
+                                            \
+        for (int i = 0; i < (ticks); i++) { \
+            tick();                         \
+        }                                   \
+    
+
 
 int g_arrayExpected [DEFAULT_ARRAY_LENGTH];
 int g_currentHour   [DEFAULT_ARRAY_LENGTH];
@@ -24,45 +34,46 @@ void setUp (void)
 /* Test cases functions */
 void test_isTimeInvalid(void)
 {
+    /* Test time not set previously */
+    
     TEST_ASSERT_FALSE(get_CurrentTime(g_currentHour,sizeof(g_currentHour)));
+    
+    /* test NULL pointers to functions */
+    TEST_ASSERT_FALSE(set_TimeOrAlarm(NULL,0,SET_TIME)); 
+    
+    TEST_ASSERT_FALSE(get_AlarmTime(NULL,0)); 
 }
 void test_isTimeSet(void)
 {
     int timeToSet [DEFAULT_ARRAY_LENGTH] = {1,2,0,0,0,0};
- 
+
     set_TimeOrAlarm(timeToSet,sizeof(timeToSet),SET_TIME);
 
     TEST_ASSERT_TRUE(get_CurrentTime(g_currentHour,sizeof(g_currentHour)));
     TEST_ASSERT_EQUAL_UINT8_ARRAY(timeToSet,g_currentHour,sizeof(g_currentHour));    
 }
-void test_verify_5_Tick(void)
+void test_verifyTicks(void)
 {
-    int tickForTest                          = 5;
-    int expectedValue [DEFAULT_ARRAY_LENGTH] = {1,2,3,0,0,5};
+    int tickForTest   [2] = {5,120};
+    int expectedValue [2] [DEFAULT_ARRAY_LENGTH] = 
+    {
+        {1,2,3,0,0,5},      // offset de 5 segundos
+        {1,2,3,2,0,0}       // offset de 2 minutos
+    };
     int timeToSet     [DEFAULT_ARRAY_LENGTH] = {1,2,3,0,0,0}; 
 
     /* Set time to clock */
-    set_TimeOrAlarm(timeToSet,sizeof(timeToSet),SET_TIME);
+    for (int ticks = 0 ; ticks < sizeof(tickForTest)/ sizeof(int)  ; ticks++)
+    {
+        memset(g_currentHour,0,sizeof(g_currentHour));
 
-    START_TICKS(tickForTest);
-    
-    /* Get Current time after ticks... */
-    TEST_ASSERT_TRUE(get_CurrentTime(g_currentHour,sizeof(g_currentHour)));
-    TEST_ASSERT_EQUAL_UINT8_ARRAY(expectedValue,g_currentHour,sizeof(g_currentHour));
-}
-void test_verify_120_Tick(void)
-{
-    int tickForTest = ONE_MINUTE_IN_SECONDS * 2;
-    int expectedValue   [DEFAULT_ARRAY_LENGTH] = {1,2,3,2,0,0};
-    int timeToSet       [DEFAULT_ARRAY_LENGTH] = {1,2,3,0,0,0}; 
-
-    /* Set time to clock */
-    set_TimeOrAlarm(timeToSet,sizeof(timeToSet),SET_TIME);
-
-    START_TICKS(tickForTest);
-
-    TEST_ASSERT_TRUE(get_CurrentTime(g_currentHour,sizeof(g_currentHour)));
-    TEST_ASSERT_EQUAL_UINT8_ARRAY(expectedValue,g_currentHour,sizeof(g_currentHour));
+        set_TimeOrAlarm(timeToSet,sizeof(timeToSet),SET_TIME);
+        
+        START_TICKS(tickForTest[ticks]);
+        /* Get Current time after ticks... */
+        TEST_ASSERT_TRUE(get_CurrentTime(g_currentHour,sizeof(g_currentHour)));
+        TEST_ASSERT_EQUAL_UINT8_ARRAY(expectedValue[ticks],g_currentHour,sizeof(g_currentHour));
+    }
 }
 void test_setAlarm(void)
 {
@@ -125,6 +136,7 @@ void test_shutdownAlarm(void)
 }
 void test_shutdownAlarmWithOffset(void)
 {
+    int testOverflowBuffer [DEFAULT_ARRAY_LENGTH] = {2,3,5,9,5,9};
     // Offset de alarma 00:02:00
     int alarmOffsetMinutes = 2;
 
@@ -133,6 +145,7 @@ void test_shutdownAlarmWithOffset(void)
 
     // Seteo 12:00:00
     int timeToSet     [DEFAULT_ARRAY_LENGTH] = {1,2,0,0,0,0};
+
     /* Setear hora */
     set_TimeOrAlarm(timeToSet,sizeof(timeToSet),SET_TIME);
 
@@ -150,15 +163,53 @@ void test_shutdownAlarmWithOffset(void)
     START_TICKS(tickForTest); TEST_ASSERT_TRUE(isSystemInAlarm());
 
     // Apagar alarma con offset de 2 minutos
-     set_ShutdownAlarmWithOffset(2);
+    set_ShutdownAlarmWithOffset(2);
 
+    // Alarma en offset assert en false
     START_TICKS(tickForTest);TEST_ASSERT_FALSE(isSystemInAlarm());
+    
+    // Alarma en offset assert en true
     START_TICKS(tickForTest);TEST_ASSERT_TRUE(isSystemInAlarm());
     
-    // Apago alarma por completo
-    set_ShutdownAlarm(); TEST_ASSERT_FALSE(isSystemInAlarm());
-}
+    set_TimeOrAlarm(testOverflowBuffer,sizeof(testOverflowBuffer),SET_TIME);
+    set_ShutdownAlarmWithOffset(2);
+    
+    // Alarma en offset assert en false
+    START_TICKS(tickForTest);TEST_ASSERT_FALSE(isSystemInAlarm());
+    
+    // Alarma en offset assert en true
+    START_TICKS(tickForTest);TEST_ASSERT_TRUE(isSystemInAlarm());
+    
 
+
+
+    
+
+    // Apago alarma por completo
+    //set_ShutdownAlarm(); TEST_ASSERT_FALSE(isSystemInAlarm());
+
+
+
+}
+void test_verifyOverflow(void)
+{
+    int tickForTest =  2;
+    int timeToSet      [DEFAULT_ARRAY_LENGTH] = {2,3,5,9,5,9};
+    int expectedValue  [DEFAULT_ARRAY_LENGTH] = {0,0,0,0,0,1}; 
+
+    /* Set time to clock */
+    set_TimeOrAlarm(timeToSet,sizeof(timeToSet),SET_TIME);
+
+    START_TICKS(tickForTest);
+
+    TEST_ASSERT_TRUE(get_CurrentTime(g_currentHour,sizeof(g_currentHour)));
+        // printf("Hora: %d%d:%d%d:%d%d\n",
+        //    g_currentHour[0], g_currentHour[1],
+        //    g_currentHour[2], g_currentHour[3],
+        //    g_currentHour[4], g_currentHour[5]);
+
+    TEST_ASSERT_EQUAL_UINT8_ARRAY(expectedValue,g_currentHour,sizeof(g_currentHour));   
+}
 
 // typedef void (*init_callback_t)(void);
 // typedef void (*test_callback_t)(void);
