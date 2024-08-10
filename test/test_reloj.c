@@ -20,15 +20,15 @@
     
 
 
-int g_arrayExpected [DEFAULT_ARRAY_LENGTH];
-int g_currentHour   [DEFAULT_ARRAY_LENGTH];
+uint8_t g_arrayExpected [DEFAULT_ARRAY_LENGTH];
+uint8_t g_currentHour   [DEFAULT_ARRAY_LENGTH];
 
 /* Initialization functions */
 void setUp (void)
 {
     memset(g_arrayExpected,0,DEFAULT_ARRAY_LENGTH);
     memset(g_currentHour,ARRAY_DEFAULT_VALUE,DEFAULT_ARRAY_LENGTH);
-    set_tickCount(DEFAULT_TICKS_PER_SECOND);
+    set_TickCount(DEFAULT_TICKS_PER_SECOND);
 }
 
 /* Test cases functions */
@@ -45,7 +45,7 @@ void test_isTimeInvalid(void)
 }
 void test_isTimeSet(void)
 {
-    int timeToSet [DEFAULT_ARRAY_LENGTH] = {1,2,0,0,0,0};
+    uint8_t timeToSet [DEFAULT_ARRAY_LENGTH] = {1,2,0,0,0,0};
 
     set_TimeOrAlarm(timeToSet,sizeof(timeToSet),SET_TIME);
 
@@ -55,12 +55,12 @@ void test_isTimeSet(void)
 void test_verifyTicks(void)
 {
     int tickForTest   [2] = {5,120};
-    int expectedValue [2] [DEFAULT_ARRAY_LENGTH] = 
+    uint8_t expectedValue[2] [DEFAULT_ARRAY_LENGTH] = 
     {
         {1,2,3,0,0,5},      // offset de 5 segundos
         {1,2,3,2,0,0}       // offset de 2 minutos
     };
-    int timeToSet     [DEFAULT_ARRAY_LENGTH] = {1,2,3,0,0,0}; 
+    uint8_t timeToSet     [DEFAULT_ARRAY_LENGTH] = {1,2,3,0,0,0}; 
 
     /* Set time to clock */
     for (int ticks = 0 ; ticks < sizeof(tickForTest)/ sizeof(int)  ; ticks++)
@@ -77,8 +77,8 @@ void test_verifyTicks(void)
 }
 void test_setAlarm(void)
 {
-    int timeToSet     [DEFAULT_ARRAY_LENGTH] = {1,2,0,0,0,0};
-    int alarmToBeSet  [DEFAULT_ARRAY_LENGTH] = {1,2,0,2,0,0}; 
+    uint8_t timeToSet     [DEFAULT_ARRAY_LENGTH] = {1,2,0,0,0,0};
+    uint8_t alarmToBeSet  [DEFAULT_ARRAY_LENGTH] = {1,2,0,2,0,0}; 
     int tickForTest       = 130;
     // Setear la hora
     set_TimeOrAlarm(timeToSet,sizeof(timeToSet),SET_TIME);
@@ -89,14 +89,14 @@ void test_setAlarm(void)
     get_AlarmTime(g_currentHour,sizeof(g_currentHour));
     TEST_ASSERT_EQUAL_UINT8_ARRAY(alarmToBeSet,g_currentHour,sizeof(g_currentHour));
 }
-void test_IsSystemInAlarm(void)
+void test_isSystemInAlarm(void)
 {
-    int timeToSet     [DEFAULT_ARRAY_LENGTH] = {1,2,0,0,0,0};
-    int alarmToBeSet  [DEFAULT_ARRAY_LENGTH] = {1,2,0,2,0,0}; 
+    uint8_t timeToSet     [DEFAULT_ARRAY_LENGTH] = {1,2,0,0,0,0};
+    uint8_t alarmToBeSet  [DEFAULT_ARRAY_LENGTH] = {1,2,0,2,0,0}; 
     int tickForTest       = ONE_MINUTE_IN_SECONDS * 2;
     
     /* Registrar callback */
-    registerCallback(setAlarmIsActive);
+    registerCallback(set_AlarmStateCB);
 
     /* Setear hora */
     set_TimeOrAlarm(timeToSet,sizeof(timeToSet),SET_TIME);
@@ -110,13 +110,13 @@ void test_IsSystemInAlarm(void)
 }
 void test_shutdownAlarm(void)
 {
-    int timeToSet     [DEFAULT_ARRAY_LENGTH] = {1,2,0,0,0,0};
-    int alarmToBeSet  [DEFAULT_ARRAY_LENGTH] = {1,2,0,2,0,0}; 
+    uint8_t timeToSet     [DEFAULT_ARRAY_LENGTH] = {1,2,0,0,0,0};
+    uint8_t alarmToBeSet  [DEFAULT_ARRAY_LENGTH] = {1,2,0,2,0,0}; 
     int hour          [DEFAULT_ARRAY_LENGTH] = { ARRAY_DEFAULT_VALUE };
     int tickForTest       = ONE_MINUTE_IN_SECONDS * 3;
     
     /* Registrar callback */
-    registerCallback(setAlarmIsActive);
+    registerCallback(set_AlarmStateCB);
 
     /* Setear hora */
     set_TimeOrAlarm(timeToSet,sizeof(timeToSet),SET_TIME);
@@ -136,21 +136,21 @@ void test_shutdownAlarm(void)
 }
 void test_shutdownAlarmWithOffset(void)
 {
-    int testOverflowBuffer [DEFAULT_ARRAY_LENGTH] = {2,3,5,9,5,9};
+    uint8_t testOverflowBuffer [DEFAULT_ARRAY_LENGTH] = {2,3,5,9,5,9};
     // Offset de alarma 00:02:00
     int alarmOffsetMinutes = 2;
 
     /* Registrar callback */
-    registerCallback(setAlarmIsActive);
+    registerCallback(set_AlarmStateCB);
 
     // Seteo 12:00:00
-    int timeToSet     [DEFAULT_ARRAY_LENGTH] = {1,2,0,0,0,0};
+    uint8_t timeToSet     [DEFAULT_ARRAY_LENGTH] = {1,2,0,0,0,0};
 
     /* Setear hora */
     set_TimeOrAlarm(timeToSet,sizeof(timeToSet),SET_TIME);
 
     // Hora de alarma 12:02:00
-    int alarmToBeSet  [DEFAULT_ARRAY_LENGTH] = {1,2,0,2,0,0}; 
+    uint8_t alarmToBeSet  [DEFAULT_ARRAY_LENGTH] = {1,2,0,2,0,0}; 
     
     /* Setear alarma  */
     set_TimeOrAlarm(alarmToBeSet,sizeof(alarmToBeSet),SET_ALARM);
@@ -194,8 +194,8 @@ void test_shutdownAlarmWithOffset(void)
 void test_verifyOverflow(void)
 {
     int tickForTest =  2;
-    int timeToSet      [DEFAULT_ARRAY_LENGTH] = {2,3,5,9,5,9};
-    int expectedValue  [DEFAULT_ARRAY_LENGTH] = {0,0,0,0,0,1}; 
+    uint8_t timeToSet      [DEFAULT_ARRAY_LENGTH] = {2,3,5,9,5,9};
+    uint8_t expectedValue  [DEFAULT_ARRAY_LENGTH] = {0,0,0,0,0,1}; 
 
     /* Set time to clock */
     set_TimeOrAlarm(timeToSet,sizeof(timeToSet),SET_TIME);
@@ -235,8 +235,8 @@ void test_verifyOverflow(void)
 //     char buffer [50] = {'\0'};
 
 //     static struct testCases {
-//         int timeToSet [DEFAULT_ARRAY_LENGTH];
-//         int expectedValue [DEFAULT_ARRAY_LENGTH];
+//         uint8_t timeToSet [DEFAULT_ARRAY_LENGTH];
+//         uint8_t expectedValue[DEFAULT_ARRAY_LENGTH];
 //         int ticks;
 //     }EJEMPLOS[] = 
 //     {
