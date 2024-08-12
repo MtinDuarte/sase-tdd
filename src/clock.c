@@ -4,21 +4,20 @@
 #include "clock.h"
 
 /* Callbacks */
-
-typedef struct 
+#define DEFAULT_ARRAY_LENGTH    6
+struct test_reloj
 {
     alarmMatched alarmCB;
     bool         isAlarmActive;
     bool         inAlarm;
     bool         isValid;
     uint8_t      alarmOffset;
-    uint8_t      alarmTime[6];  // {h,h,m,m,s,s}
-    uint8_t      time[6];       // {h,h,m,m,s,s}    
+    uint8_t      alarmTime[DEFAULT_ARRAY_LENGTH];  // {h,h,m,m,s,s}
+    uint8_t      time[DEFAULT_ARRAY_LENGTH];       // {h,h,m,m,s,s}    
     uint32_t     currentTicks;
     uint32_t     ticksPerSecond;
-}test_reloj;
+}g_test_reloj;
 
-test_reloj g_test_reloj;
 
 /**
  * @brief Set the Alarm Is Active
