@@ -166,3 +166,68 @@ De manera que se pueda acceder a los archivos de **"unity.h"** para poder accede
     "version": 4
 }
 ```
+
+## Resultados
+
+Los resultados obtenidos fueron los siguientes:
+
+### Ceedling
+    Test 'test_reloj.c'
+    -------------------
+    Compiling test_reloj_runner.c...
+    Compiling test_reloj.c...
+    Compiling unity.c...
+    Compiling clock.c...
+    Compiling cmock.c...
+    Linking test_reloj.out...
+    Running test_reloj.out...
+
+    --------------------
+    OVERALL TEST SUMMARY
+    --------------------
+    TESTED:  8
+    PASSED:  8
+    FAILED:  0
+    IGNORED: 0
+
+
+### Test de covertura
+
+    mtinduarte@MSI:/mnt/c/Users/Martin/Desktop/GitHub_MtinDuarte/sase-tdd$ ceedling clobber gcov:all utils:gcov
+
+    Clobbering all generated files...
+    (For large projects, this task may take a long time to complete)
+
+
+
+    Test 'test_reloj.c'
+    -------------------
+    Generating runner for test_reloj.c...
+    Compiling test_reloj_runner.c...
+    Compiling test_reloj.c...
+    Compiling unity.c...
+    Compiling clock.c with coverage...
+    Compiling cmock.c...
+    Linking test_reloj.out...
+    Running test_reloj.out...
+    Creating gcov results report(s) in 'build/artifacts/gcov'... Done in 0.887 seconds.
+
+    --------------------------
+    GCOV: OVERALL TEST SUMMARY
+    --------------------------
+    TESTED:  8
+    PASSED:  8
+    FAILED:  0
+    IGNORED: 0
+
+
+    ---------------------------
+    GCOV: CODE COVERAGE SUMMARY
+    ---------------------------
+    clock.c Lines executed:100.00% of 105
+    clock.c Branches executed:100.00% of 66
+    clock.c Taken at least once:78.79% of 66
+    clock.c Calls executed:100.00% of 6
+    clock.c Lines executed:100.00% of 105
+
+![Test de covertura](images/test-covertura.png)
